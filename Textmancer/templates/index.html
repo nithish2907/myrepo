@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Textmancer - Text Generation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        h1 {
+            text-align: center;
+            color: #007BFF;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        textarea, input {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus, input:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        button {
+            padding: 12px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .result p {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Textmancer - Text Generation</h1>
+        <form action="/generate" method="post">
+            <label for="prompt">Prompt:</label>
+            <textarea id="prompt" name="prompt" rows="4" placeholder="Enter your prompt here..." required></textarea>
+
+            <label for="max_length">Max Length:</label>
+            <input type="number" id="max_length" name="max_length" value="150" min="1" required>
+
+            <label for="temperature">Temperature:</label>
+            <input type="number" step="0.1" id="temperature" name="temperature" value="1.0" min="0" max="2" required>
+
+            <label for="num_return_sequences">Number of Sequences:</label>
+            <input type="number" id="num_return_sequences" name="num_return_sequences" value="1" min="1" required>
+
+            <button type="submit">Generate</button>
+        </form>
+
+        {% if generated_texts %}
+            <h2>Generated Texts</h2>
+            {% for text in generated_texts %}
+                <div class="result">
+                    <p>{{ text }}</p>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <script>
+        // Optional: JavaScript to enhance interaction
+        document.querySelector('form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            const formData = new FormData(this);
+            const formObject = Object.fromEntries(formData.entries());
+
+            fetch('/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formObject)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsContainer = document.querySelector('.container');
+                const results = data.generated_texts.map(text => `
+                    <div class="result">
+                        <p>${text}</p>
+                    </div>
+                `).join('');
+                resultsContainer.innerHTML += `<h2>Generated Texts</h2>${results}`;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
